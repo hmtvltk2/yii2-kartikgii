@@ -1,6 +1,6 @@
 <?php
 
-namespace kartikgii\crud;
+namespace hmtvltk2\kartikgii\crud;
 
 use Yii;
 use yii\db\ActiveRecord;
