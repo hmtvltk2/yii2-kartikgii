@@ -26,11 +26,11 @@ use yii\web\Controller;
 class Generator extends \yii\gii\generators\crud\Generator
 {
     public $modelClass;
-    public $moduleID;
     public $controllerClass;
     public $baseControllerClass = 'yii\web\Controller';
     public $indexWidgetType = 'grid';
     public $searchModelClass = '';
+    public $viewPath;
 
     /**
      * @inheritdoc
@@ -55,7 +55,6 @@ class Generator extends \yii\gii\generators\crud\Generator
     public function rules()
     {
         return array_merge(parent::rules(), [
-            [['moduleID', 'controllerClass', 'modelClass', 'searchModelClass', 'baseControllerClass'], 'filter', 'filter' => 'trim'],
             [['modelClass', 'controllerClass', 'baseControllerClass', 'indexWidgetType'], 'required'],
             [['searchModelClass'], 'compare', 'compareAttribute' => 'modelClass', 'operator' => '!==', 'message' => 'Search Model Class must not be equal to Model Class.'],
             [['modelClass', 'controllerClass', 'baseControllerClass', 'searchModelClass'], 'match', 'pattern' => '/^[\w\\\\]*$/', 'message' => 'Only word characters and backslashes are allowed.'],
@@ -66,9 +65,9 @@ class Generator extends \yii\gii\generators\crud\Generator
             [['controllerClass', 'searchModelClass'], 'validateNewClass'],
             [['indexWidgetType'], 'in', 'range' => ['grid', 'list']],
             [['modelClass'], 'validateModelClass'],
-            [['moduleID'], 'validateModuleID'],
             [['enableI18N'], 'boolean'],
             [['messageCategory'], 'validateMessageCategory', 'skipOnEmpty' => false],
+            ['viewPath', 'safe'],
         ]);
     }
 
@@ -79,7 +78,7 @@ class Generator extends \yii\gii\generators\crud\Generator
     {
         return array_merge(parent::attributeLabels(), [
             'modelClass' => 'Model Class',
-            'moduleID' => 'Module ID',
+            'viewPath' => 'View Path',
             'controllerClass' => 'Controller Class',
             'baseControllerClass' => 'Base Controller Class',
             'indexWidgetType' => 'Widget Used in Index Page',
@@ -100,12 +99,13 @@ class Generator extends \yii\gii\generators\crud\Generator
                 The controller class name should follow the CamelCase scheme with an uppercase first letter',
             'baseControllerClass' => 'This is the class that the new CRUD controller class will extend from.
                 You should provide a fully qualified class name, e.g., <code>yii\web\Controller</code>.',
-            'moduleID' => 'This is the ID of the module that the generated controller will belong to.
-                If not set, it means the controller will belong to the application.',
             'indexWidgetType' => 'This is the widget type to be used in the index page to display list of the models.
                 You may choose either <code>GridView</code> or <code>ListView</code>',
             'searchModelClass' => 'This is the name of the search model class to be generated. You should provide a fully
                 qualified namespaced class name, e.g., <code>app\models\PostSearch</code>.',
+            'viewPath' => 'Specify the directory for storing the view scripts for the controller. You may use path alias here, e.g.,
+                <code>/var/www/basic/controllers/views/post</code>, <code>@app/views/post</code>. If not set, it will default
+                to <code>@app/views/ControllerID</code>',
         ]);
     }
 
@@ -122,7 +122,7 @@ class Generator extends \yii\gii\generators\crud\Generator
      */
     public function stickyAttributes()
     {
-        return array_merge(parent::stickyAttributes(), ['baseControllerClass', 'moduleID', 'indexWidgetType']);
+        return array_merge(parent::stickyAttributes(), ['baseControllerClass', 'indexWidgetType']);
     }
 
     /**
@@ -138,18 +138,7 @@ class Generator extends \yii\gii\generators\crud\Generator
         }
     }
 
-    /**
-     * Checks if model ID is valid
-     */
-    public function validateModuleID()
-    {
-        if (!empty($this->moduleID)) {
-            $module = Yii::$app->getModule($this->moduleID);
-            if ($module === null) {
-                $this->addError('moduleID', "Module '{$this->moduleID}' does not exist.");
-            }
-        }
-    }
+
 
     /**
      * @inheritdoc
@@ -197,9 +186,11 @@ class Generator extends \yii\gii\generators\crud\Generator
      */
     public function getViewPath()
     {
-        $module = empty($this->moduleID) ? Yii::$app : Yii::$app->getModule($this->moduleID);
+        if (empty($this->viewPath)) {
+            return Yii::getAlias('@app/views/' . $this->getControllerID());
+        }
 
-        return $module->getViewPath() . '/' . $this->getControllerID() ;
+        return Yii::getAlias(str_replace('\\', '/', $this->viewPath));
     }
 
     public function getNameAttribute()
@@ -228,20 +219,20 @@ class Generator extends \yii\gii\generators\crud\Generator
         $tableSchema = $this->getTableSchema();
         if ($tableSchema === false || !isset($tableSchema->columns[$attribute])) {
             if (preg_match('/^(password|pass|passwd|passcode)$/i', $attribute)) {
-                return "'$attribute' => ['type' => TabularForm::INPUT_PASSWORD,'options' => ['placeholder' => 'Enter ".$attributeLabels[$attribute]."...']],";
+                return "'$attribute' => ['type' => TabularForm::INPUT_PASSWORD,'options' => ['placeholder' => 'Enter " . $attributeLabels[$attribute] . "...']],";
                 //return "\$form->field(\$model, '$attribute')->passwordInput()";
             } else {
-                return "'$attribute' => ['type' => TabularForm::INPUT_TEXT, 'options' => ['placeholder' => 'Enter ".$attributeLabels[$attribute]."...']],";
+                return "'$attribute' => ['type' => TabularForm::INPUT_TEXT, 'options' => ['placeholder' => 'Enter " . $attributeLabels[$attribute] . "...']],";
                 //return "\$form->field(\$model, '$attribute')";
             }
         }
         $column = $tableSchema->columns[$attribute];
         if ($column->phpType === 'boolean') {
             //return "\$form->field(\$model, '$attribute')->checkbox()";
-            return "'$attribute' => ['type' => Form::INPUT_CHECKBOX, 'options' => ['placeholder' => 'Enter ".$attributeLabels[$attribute]."...']],";
+            return "'$attribute' => ['type' => Form::INPUT_CHECKBOX, 'options' => ['placeholder' => 'Enter " . $attributeLabels[$attribute] . "...']],";
         } elseif ($column->type === 'text') {
             //return "\$form->field(\$model, '$attribute')->textarea(['rows' => 6])";
-            return "'$attribute' => ['type' => Form::INPUT_TEXTAREA, 'options' => ['placeholder' => 'Enter ".$attributeLabels[$attribute]."...','rows' => 6]],";
+            return "'$attribute' => ['type' => Form::INPUT_TEXTAREA, 'options' => ['placeholder' => 'Enter " . $attributeLabels[$attribute] . "...','rows' => 6]],";
         } elseif ($column->type === 'date') {
             return "'$attribute' => ['type' => Form::INPUT_WIDGET, 'widgetClass' => DateControl::classname(),'options' => ['type' => DateControl::FORMAT_DATE]],";
         } elseif ($column->type === 'time') {
@@ -256,10 +247,10 @@ class Generator extends \yii\gii\generators\crud\Generator
             }
             if ($column->phpType !== 'string' || $column->size === null) {
                 //return "\$form->field(\$model, '$attribute')->$input()";
-                return "'$attribute' => ['type' => Form::".$input.", 'options' => ['placeholder' => 'Enter ".$attributeLabels[$attribute]."...']],";
+                return "'$attribute' => ['type' => Form::" . $input . ", 'options' => ['placeholder' => 'Enter " . $attributeLabels[$attribute] . "...']],";
             } else {
                 //return "\$form->field(\$model, '$attribute')->$input(['maxlength' => $column->size])";
-                return "'$attribute' => ['type' => Form::".$input.", 'options' => ['placeholder' => 'Enter ".$attributeLabels[$attribute]."...', 'maxlength' => ".$column->size."]],";
+                return "'$attribute' => ['type' => Form::" . $input . ", 'options' => ['placeholder' => 'Enter " . $attributeLabels[$attribute] . "...', 'maxlength' => " . $column->size . "]],";
             }
         }
     }
