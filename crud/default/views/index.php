@@ -34,7 +34,7 @@ $this->params['breadcrumbs'][] = $this->title;
     <div class="page-header">
         <h1><?= "<?= " ?>Html::encode($this->title) ?></h1>
     </div>
-<?php if (!empty($generator->searchModelClass)): ?>
+<?php if (!empty($generator->searchModelClass)) : ?>
 <?= "    <?php " . ($generator->indexWidgetType === 'grid' ? "// " : "") ?>echo $this->render('_search', ['model' => $searchModel]); ?>
 <?php endif; ?>
 
@@ -42,7 +42,7 @@ $this->params['breadcrumbs'][] = $this->title;
         <?= "<?php /* echo " ?>Html::a(<?= $generator->generateString('Create {modelClass}', ['modelClass' => Inflector::camel2words(StringHelper::basename($generator->modelClass))]) ?>, ['create'], ['class' => 'btn btn-success'])<?= "*/ " ?> ?>
     </p>
 
-<?php if ($generator->indexWidgetType === 'grid'): ?>
+<?php if ($generator->indexWidgetType === 'grid') : ?>
     <?= "<?php Pjax::begin(); echo " ?>GridView::widget([
         'dataProvider' => $dataProvider,
         <?= !empty($generator->searchModelClass) ? "'filterModel' => \$searchModel,\n        'columns' => [\n" : "'columns' => [\n"; ?>
@@ -72,7 +72,7 @@ if (($tableSchema = $generator->getTableSchema()) === false) {
             $columnDisplay = "            '" . $column->name . ($format === 'text' ? "" : ":" . $format) . "',";
         }
         if (++$count < 6) {
-            echo $columnDisplay ."\n";
+            echo $columnDisplay . "\n";
         } else {
             echo "//" . $columnDisplay . " \n";
         }
@@ -85,7 +85,7 @@ if (($tableSchema = $generator->getTableSchema()) === false) {
                 'buttons' => [
                     'update' => function ($url, $model) {
                         return Html::a('<span class="glyphicon glyphicon-pencil"></span>',
-                            Yii::$app->urlManager->createUrl(['<?= (empty($generator->moduleID) ? '' : $generator->moduleID . '/') . $generator->controllerID?>/view', <?= $urlParams ?>, 'edit' => 't']),
+                            Yii::$app->urlManager->createUrl(['<?= $generator->controllerID ?>/view', <?= $urlParams ?>, 'edit' => 't']),
                             ['title' => Yii::t('yii', 'Edit'),]
                         );
                     }
@@ -105,7 +105,7 @@ if (($tableSchema = $generator->getTableSchema()) === false) {
             'showFooter' => false
         ],
     ]); Pjax::end(); ?>
-<?php else: ?>
+<?php else : ?>
     <?= "<?= " ?>ListView::widget([
         'dataProvider' => $dataProvider,
         'itemOptions' => ['class' => 'item'],
