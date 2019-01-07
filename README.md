@@ -39,18 +39,8 @@ to the ```require``` section of your `composer.json` file.
 ```php
 //Add this into backend/config/main-local.php
 $config['modules']['gii']['generators'] = [
-        'kartikgii-crud' => ['class' => 'warrence\kartikgii\crud\Generator'],
+        'kartikgii-crud' => ['class' => 'hmtvltk2\kartikgii\crud\Generator'],
     ];
-```
-
-```php
-//Add 'gridview' into your 'modules' section in backend/config/main.php
-'modules' => [
-        'gridview' => [
-            'class' => 'kartik\grid\Module',
-        ],
-
-    ],
 ```
 
 ```php
