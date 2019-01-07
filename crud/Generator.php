@@ -31,6 +31,7 @@ class Generator extends \yii\gii\generators\crud\Generator
     public $indexWidgetType = 'grid';
     public $searchModelClass = '';
     public $viewPath;
+    public $displayName;
 
     /**
      * @inheritdoc
@@ -68,6 +69,7 @@ class Generator extends \yii\gii\generators\crud\Generator
             [['enableI18N'], 'boolean'],
             [['messageCategory'], 'validateMessageCategory', 'skipOnEmpty' => false],
             ['viewPath', 'safe'],
+            ['displayName', 'required']
         ]);
     }
 
@@ -83,6 +85,7 @@ class Generator extends \yii\gii\generators\crud\Generator
             'baseControllerClass' => 'Base Controller Class',
             'indexWidgetType' => 'Widget Used in Index Page',
             'searchModelClass' => 'Search Model Class',
+            'displayName' => 'Display Name'
         ]);
     }
 
@@ -219,20 +222,20 @@ class Generator extends \yii\gii\generators\crud\Generator
         $tableSchema = $this->getTableSchema();
         if ($tableSchema === false || !isset($tableSchema->columns[$attribute])) {
             if (preg_match('/^(password|pass|passwd|passcode)$/i', $attribute)) {
-                return "'$attribute' => ['type' => TabularForm::INPUT_PASSWORD,'options' => ['placeholder' => 'Enter " . $attributeLabels[$attribute] . "...']],";
+                return "'$attribute' => ['type' => TabularForm::INPUT_PASSWORD,'options' => ['placeholder' => 'Nhập " . $attributeLabels[$attribute] . "...']],";
                 //return "\$form->field(\$model, '$attribute')->passwordInput()";
             } else {
-                return "'$attribute' => ['type' => TabularForm::INPUT_TEXT, 'options' => ['placeholder' => 'Enter " . $attributeLabels[$attribute] . "...']],";
+                return "'$attribute' => ['type' => TabularForm::INPUT_TEXT, 'options' => ['placeholder' => 'Nhập " . $attributeLabels[$attribute] . "...']],";
                 //return "\$form->field(\$model, '$attribute')";
             }
         }
         $column = $tableSchema->columns[$attribute];
         if ($column->phpType === 'boolean') {
             //return "\$form->field(\$model, '$attribute')->checkbox()";
-            return "'$attribute' => ['type' => Form::INPUT_CHECKBOX, 'options' => ['placeholder' => 'Enter " . $attributeLabels[$attribute] . "...']],";
+            return "'$attribute' => ['type' => Form::INPUT_CHECKBOX, 'options' => ['placeholder' => 'Nhập " . $attributeLabels[$attribute] . "...']],";
         } elseif ($column->type === 'text') {
             //return "\$form->field(\$model, '$attribute')->textarea(['rows' => 6])";
-            return "'$attribute' => ['type' => Form::INPUT_TEXTAREA, 'options' => ['placeholder' => 'Enter " . $attributeLabels[$attribute] . "...','rows' => 6]],";
+            return "'$attribute' => ['type' => Form::INPUT_TEXTAREA, 'options' => ['placeholder' => 'Nhập " . $attributeLabels[$attribute] . "...','rows' => 6]],";
         } elseif ($column->type === 'date') {
             return "'$attribute' => ['type' => Form::INPUT_WIDGET, 'widgetClass' => DateControl::classname(),'options' => ['type' => DateControl::FORMAT_DATE]],";
         } elseif ($column->type === 'time') {
@@ -247,10 +250,10 @@ class Generator extends \yii\gii\generators\crud\Generator
             }
             if ($column->phpType !== 'string' || $column->size === null) {
                 //return "\$form->field(\$model, '$attribute')->$input()";
-                return "'$attribute' => ['type' => Form::" . $input . ", 'options' => ['placeholder' => 'Enter " . $attributeLabels[$attribute] . "...']],";
+                return "'$attribute' => ['type' => Form::" . $input . ", 'options' => ['placeholder' => 'Nhập " . $attributeLabels[$attribute] . "...']],";
             } else {
                 //return "\$form->field(\$model, '$attribute')->$input(['maxlength' => $column->size])";
-                return "'$attribute' => ['type' => Form::" . $input . ", 'options' => ['placeholder' => 'Enter " . $attributeLabels[$attribute] . "...', 'maxlength' => " . $column->size . "]],";
+                return "'$attribute' => ['type' => Form::" . $input . ", 'options' => ['placeholder' => 'Nhập " . $attributeLabels[$attribute] . "...', 'maxlength' => " . $column->size . "]],";
             }
         }
     }
@@ -283,17 +286,29 @@ class Generator extends \yii\gii\generators\crud\Generator
     {
         if ($column->phpType === 'boolean') {
             return 'boolean';
-        } elseif ($column->type === 'text') {
-            return 'ntext';
-        } elseif (stripos($column->name, 'time') !== false && $column->phpType === 'integer') {
-            return 'datetime';
-        } elseif (stripos($column->name, 'email') !== false) {
-            return 'email';
-        } elseif (stripos($column->name, 'url') !== false) {
-            return 'url';
-        } else {
-            return 'text';
         }
+
+        if ($column->type === 'text') {
+            return 'ntext';
+        }
+
+        if (stripos($column->name, 'time') !== false && $column->phpType === 'integer') {
+            return 'datetime';
+        }
+
+        if ($column->type === 'date') {
+            return 'date';
+        }
+
+        if (stripos($column->name, 'email') !== false) {
+            return 'email';
+        }
+
+        if (preg_match('/(\b|[_-])url(\b|[_-])/i', $column->name)) {
+            return 'url';
+        }
+
+        return 'text';
     }
 
     /**

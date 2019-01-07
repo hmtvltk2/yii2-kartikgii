@@ -4,11 +4,6 @@ use yii\helpers\Inflector;
 use yii\helpers\StringHelper;
 
 
-/**
- * @var yii\web\View $this
- * @var yii\gii\generators\crud\Generator $generator
- */
-
 $urlParams = $generator->generateUrlParams();
 $nameAttribute = $generator->getNameAttribute();
 
@@ -19,34 +14,29 @@ echo "<?php\n";
 
 use yii\helpers\Html;
 use <?= $generator->indexWidgetType === 'grid' ? "kartik\\grid\\GridView" : "yii\\widgets\\ListView" ?>;
-use yii\widgets\Pjax;
 
-/**
- * @var yii\web\View $this
- * @var yii\data\ActiveDataProvider $dataProvider
-<?= !empty($generator->searchModelClass) ? " * @var " . ltrim($generator->searchModelClass, '\\') . " \$searchModel\n" : '' ?>
- */
-
-$this->title = <?= $generator->generateString(Inflector::pluralize(Inflector::camel2words(StringHelper::basename($generator->modelClass)))) ?>;
+$this->title = '<?= 'Danh Sách ' . $generator->displayName ?>';
 $this->params['breadcrumbs'][] = $this->title;
 ?>
-<div class="<?= Inflector::camel2id(StringHelper::basename($generator->modelClass)) ?>-index">
-    <div class="page-header">
-        <h1><?= "<?= " ?>Html::encode($this->title) ?></h1>
-    </div>
+
+  
 <?php if (!empty($generator->searchModelClass)) : ?>
-<?= "    <?php " . ($generator->indexWidgetType === 'grid' ? "// " : "") ?>echo $this->render('_search', ['model' => $searchModel]); ?>
+<?= "    <?php " . ($generator->indexWidgetType === 'grid' ? "// " : "") ?> echo $this->render('_search', ['model' => $searchModel]); ?>
 <?php endif; ?>
 
-    <p>
-        <?= "<?php /* echo " ?>Html::a(<?= $generator->generateString('Create {modelClass}', ['modelClass' => Inflector::camel2words(StringHelper::basename($generator->modelClass))]) ?>, ['create'], ['class' => 'btn btn-success'])<?= "*/ " ?> ?>
-    </p>
-
 <?php if ($generator->indexWidgetType === 'grid') : ?>
-    <?= "<?php Pjax::begin(); echo " ?>GridView::widget([
+    <?= "<?= " ?>GridView::widget([
         'dataProvider' => $dataProvider,
         <?= !empty($generator->searchModelClass) ? "'filterModel' => \$searchModel,\n        'columns' => [\n" : "'columns' => [\n"; ?>
-            ['class' => 'yii\grid\SerialColumn'],
+            [
+                'class' => '\kartik\grid\ActionColumn',
+                'header' => '',
+                'noWrap' => true,
+                'deleteOptions' => ['class' => 'text-danger'],
+                'viewOptions' => ['class' => 'text-info mr-1'],
+                'updateOptions' => ['class' => 'mr-1']
+            ],
+            ['class' => '\kartik\grid\SerialColumn'],
 
 <?php
 $count = 0;
@@ -61,16 +51,7 @@ if (($tableSchema = $generator->getTableSchema()) === false) {
 } else {
     foreach ($tableSchema->columns as $column) {
         $format = $generator->generateColumnFormat($column);
-        if ($column->type === 'date') {
-            $columnDisplay = "            ['attribute' => '$column->name','format' => ['date',(isset(Yii::\$app->modules['datecontrol']['displaySettings']['date'])) ? Yii::\$app->modules['datecontrol']['displaySettings']['date'] : 'd-m-Y']],";
-
-        } elseif ($column->type === 'time') {
-            $columnDisplay = "            ['attribute' => '$column->name','format' => ['time',(isset(Yii::\$app->modules['datecontrol']['displaySettings']['time'])) ? Yii::\$app->modules['datecontrol']['displaySettings']['time'] : 'H:i:s A']],";
-        } elseif ($column->type === 'datetime' || $column->type === 'timestamp') {
-            $columnDisplay = "            ['attribute' => '$column->name','format' => ['datetime',(isset(Yii::\$app->modules['datecontrol']['displaySettings']['datetime'])) ? Yii::\$app->modules['datecontrol']['displaySettings']['datetime'] : 'd-m-Y H:i:s A']],";
-        } else {
-            $columnDisplay = "            '" . $column->name . ($format === 'text' ? "" : ":" . $format) . "',";
-        }
+        $columnDisplay = "            '" . $column->name . ($format === 'text' ? "" : ":" . $format) . "',";
         if (++$count < 6) {
             echo $columnDisplay . "\n";
         } else {
@@ -79,32 +60,18 @@ if (($tableSchema = $generator->getTableSchema()) === false) {
     }
 }
 ?>
-
-            [
-                'class' => 'yii\grid\ActionColumn',
-                'buttons' => [
-                    'update' => function ($url, $model) {
-                        return Html::a('<span class="glyphicon glyphicon-pencil"></span>',
-                            Yii::$app->urlManager->createUrl(['<?= $generator->controllerID ?>/view', <?= $urlParams ?>, 'edit' => 't']),
-                            ['title' => Yii::t('yii', 'Edit'),]
-                        );
-                    }
-                ],
-            ],
+          
         ],
-        'responsive' => true,
+        'pjax' => true,
+        'striped' => true,
         'hover' => true,
-        'condensed' => true,
-        'floatHeader' => true,
-
+        'toggleDataContainer' => ['class' => 'btn-group mr-2'],
         'panel' => [
-            'heading' => '<h3 class="panel-title"><i class="glyphicon glyphicon-th-list"></i> '.Html::encode($this->title).' </h3>',
+            'heading' => '<h4 class="m-0 font-weight-semibold">' . Html::encode($this->title) . ' </h4>',
             'type' => 'info',
-            'before' => Html::a('<i class="glyphicon glyphicon-plus"></i> Add', ['create'], ['class' => 'btn btn-success']),
-            'after' => Html::a('<i class="glyphicon glyphicon-repeat"></i> Reset List', ['index'], ['class' => 'btn btn-info']),
-            'showFooter' => false
+            'before' => Html::a('Thêm Mới <b><i class="icon-add"></i></b>', ['create'], ['class' => 'btn btn-sm bg-primary btn-labeled btn-labeled-right legitRipple']),
         ],
-    ]); Pjax::end(); ?>
+    ]);  ?>
 <?php else : ?>
     <?= "<?= " ?>ListView::widget([
         'dataProvider' => $dataProvider,
@@ -115,4 +82,4 @@ if (($tableSchema = $generator->getTableSchema()) === false) {
     ]) ?>
 <?php endif; ?>
 
-</div>
+

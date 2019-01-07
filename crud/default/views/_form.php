@@ -25,32 +25,40 @@ use kartik\widgets\ActiveForm;
 use kartik\builder\Form;
 use kartik\datecontrol\DateControl;
 
-/**
- * @var yii\web\View $this
- * @var <?= ltrim($generator->modelClass, '\\') ?> $model
- * @var yii\widgets\ActiveForm $form
- */
 ?>
 
-<div class="<?= Inflector::camel2id(StringHelper::basename($generator->modelClass)) ?>-form">
+<?= "<?php " ?>$form = ActiveForm::begin(['type' => ActiveForm::TYPE_HORIZONTAL]);?>
+ <?= '<?= ' ?> Form::widget([
 
-    <?= "<?php " ?>$form = ActiveForm::begin(['type' => ActiveForm::TYPE_HORIZONTAL]); echo Form::widget([
+    'model' => $model,
+    'form' => $form,
+    'columns' => 1,
+    'attributes' => [
 
-        'model' => $model,
-        'form' => $form,
-        'columns' => 1,
-        'attributes' => [
-
-<?php foreach ($safeAttributes as $attribute): ?>
-            <?= $generator->generateActiveField($attribute) . "\n\n"; ?>
+<?php foreach ($safeAttributes as $attribute) : ?>
+        <?= $generator->generateActiveField($attribute) . "\n\n"; ?>
 <?php endforeach; ?>
-        ]
+    ]
 
-    ]);
+]);?>
 
-    echo Html::submitButton($model->isNewRecord ? Yii::t('app', 'Create') : Yii::t('app', 'Update'),
-        ['class' => $model->isNewRecord ? 'btn btn-success' : 'btn btn-primary']
-    );
-    ActiveForm::end(); ?>
-
+<div class="text-right card-body py-0 px-0">
+    <?= "<?= " ?> Html::submitButton('Lưu <b><i class="icon-paperplane "></i></b>', ['class' => 'btn btn-primary btn-sm btn-labeled btn-labeled-right legitRipple mr-1']) ?>
+    <?= "<?php " ?> if (isset($isNew) && $isNew) : ?>
+        <?= "<?= " ?> Html::submitButton(
+            'Lưu và tiếp tục <b><i class="icon-paperplane"></i></b>',
+            [
+                'class' => 'btn btn-success btn-sm btn-labeled btn-labeled-right legitRipple mr-1',
+                'name' => 'save-and-continue'
+            ]
+        ) ?>
+    <?= "<?php " ?> endif ?>
+    <?= "<?= " ?> Html::a(
+        'Hủy <b><i class="icon-cancel-square"></i></b>',
+        ['index'],
+        ['class' => 'btn btn-warning btn-sm btn-labeled btn-labeled-right legitRipple']
+    ) ?>
 </div>
+<?= "<?php " ?>ActiveForm::end(); ?>
+
+

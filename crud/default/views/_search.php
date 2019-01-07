@@ -14,14 +14,9 @@ echo "<?php\n";
 use yii\helpers\Html;
 use yii\widgets\ActiveForm;
 
-/**
- * @var yii\web\View $this
- * @var <?= ltrim($generator->searchModelClass, '\\') ?> $model
- * @var yii\widgets\ActiveForm $form
- */
 ?>
 
-<div class="<?= Inflector::camel2id(StringHelper::basename($generator->modelClass)) ?>-search">
+<div class="card card-body">
 
     <?= "<?php " ?>$form = ActiveForm::begin([
         'action' => ['index'],
@@ -29,13 +24,8 @@ use yii\widgets\ActiveForm;
     ]); ?>
 
 <?php
-$count = 0;
 foreach ($generator->getColumnNames() as $attribute) {
-    if (++$count < 6) {
-        echo "    <?= " . $generator->generateActiveSearchField($attribute) . " ?>\n\n";
-    } else {
-        echo "    <?php // echo " . $generator->generateActiveSearchField($attribute) . " ?>\n\n";
-    }
+    echo "    <?= " . $generator->generateActiveSearchField($attribute) . " ?>\n\n";
 }
 ?>
     <div class="form-group">
