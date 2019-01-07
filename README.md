@@ -54,8 +54,9 @@ $config['modules']['gii']['generators'] = [
 ```
 
 ```php
-//add modules 'datecontrol' into your 'modules' section in common/config/main 
+// Add modules 'gridview' and 'datecontrol' into your 'modules' section in config/web 
 'modules' => [
+        'gridview' => 'kartik\grid\Module',
         'datecontrol' => 'kartik\datecontrol\Module',
     ],
 ```
