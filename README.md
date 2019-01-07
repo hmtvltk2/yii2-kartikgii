@@ -37,7 +37,7 @@ to the ```require``` section of your `composer.json` file.
 ## Usage
 
 ```php
-//Add this into backend/config/main-local.php
+//Add this into config/web 
 $config['modules']['gii']['generators'] = [
         'kartikgii-crud' => ['class' => 'hmtvltk2\kartikgii\crud\Generator'],
     ];
